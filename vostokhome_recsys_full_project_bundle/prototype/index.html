@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Восток-Техно & Дом — Интерактивный прототип (12 экранов)</title>
+<style>
+  :root { --primary:#1f3864; --accent:#2f5597; --bg:#f4f6fa; --card:#ffffff; --text:#1f2937; --muted:#6b7280; --border:#e5e7eb; --green:#15803d; --red:#b91c1c; }
+  * { box-sizing:border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { margin:0; background:var(--bg); color:var(--text); }
+  .topbar { background:var(--primary); color:#fff; padding:12px 24px; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; }
+  .topbar h1 { margin:0; font-size:18px; }
+  .controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  select, button { padding:7px 12px; border-radius:6px; border:1px solid var(--border); font-size:13px; cursor:pointer; }
+  button.primary { background:var(--accent); color:#fff; border:none; }
+  button.outline { background:#fff; color:var(--primary); }
+  .nav-tabs { background:#fff; border-bottom:1px solid var(--border); padding:8px 24px; display:flex; flex-wrap:wrap; gap:6px; }
+  .nav-tabs button { background:#f8fafc; color:var(--text); border:1px solid var(--border); font-size:12px; }
+  .nav-tabs button.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+  .viewport { max-width:1160px; margin:20px auto; padding:0 16px; transition:all .2s; }
+  .viewport.mobile { max-width:390px; border:8px solid #111827; border-radius:28px; background:#fff; padding:12px; box-shadow:0 12px 30px rgba(0,0,0,.15); }
+  .banner { background:#e0e7ff; border:1px solid #c7d2fe; padding:12px 16px; border-radius:8px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:14px; }
+  .viewport.mobile .grid { grid-template-columns:1fr; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px; display:flex; flex-direction:column; justify-content:space-between; }
+  .badge { display:inline-block; font-size:11px; padding:3px 8px; border-radius:999px; background:#eff6ff; color:var(--accent); font-weight:600; margin-bottom:6px; }
+  .badge.promo { background:#fef2f2; color:var(--red); }
+  .badge.out { background:#f3f4f6; color:var(--muted); }
+  .price { font-size:17px; font-weight:700; margin:8px 0; }
+  .screen { display:none; }
+  .screen.active { display:block; }
+  .panel { background:#fff; border:1px solid var(--border); border-radius:10px; padding:18px; margin-bottom:16px; }
+  .row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); }
+  input[type=text], input[type=password], input[type=number] { padding:8px 10px; border:1px solid var(--border); border-radius:6px; width:100%; max-width:320px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>Восток-Техно & Дом — Прототип RecSys</h1>
+  <div class="controls">
+    <label style="font-size:12px;">Пользователь:</label>
+    <select id="userSelect" onchange="switchUser()">
+      <option value="GUEST">Новый гость (Alg_Cold)</option>
+      <option value="USR-01">USR-01 Алиса Морозова (GRP-2)</option>
+      <option value="USR-03">USR-03 Елена Волкова (GRP-3)</option>
+    </select>
+    <button class="outline" onclick="toggleMobile()">Desktop / Mobile (390px)</button>
+  </div>
+</div>
+
+<div class="nav-tabs" id="tabs">
+  <button class="active" onclick="showScreen('s1', this)">1. Главная</button>
+  <button onclick="showScreen('s2', this)">2. Каталог (8×24)</button>
+  <button onclick="showScreen('s3', this)">3. Поиск и фильтры</button>
+  <button onclick="showScreen('s4', this)">4. Карточка товара</button>
+  <button onclick="showScreen('s5', this)">5. Корзина</button>
+  <button onclick="showScreen('s6', this)">6. Оформление заказа</button>
+  <button onclick="showScreen('s7', this)">7. Вход / Регистрация</button>
+  <button onclick="showScreen('s8', this)">8. Личный кабинет</button>
+  <button onclick="showScreen('s9', this)">9. Предпочтения (Opt-out)</button>
+  <button onclick="showScreen('s10', this)">10. Админ-панель</button>
+</div>
+
+<div class="viewport" id="viewport">
+  <!-- Экран 1: Главная -->
+  <div id="s1" class="screen active">
+    <div class="banner" id="roleBanner">
+      <span id="bannerText">Режим: Новый гость. Показана стартовая подборка популярных и акционных товаров (Alg_Cold).</span>
+      <button class="primary" onclick="showScreen('s7', document.querySelectorAll('.nav-tabs button')[6])">Войти для персональных</button>
+    </div>
+    <h2 id="recTitle">Рекомендации на главной странице (Топ-5)</h2>
+    <div class="grid" id="homeRecs"></div>
+  </div>
+
+  <!-- Экран 2: Каталог -->
+  <div id="s2" class="screen">
+    <div class="panel">
+      <h2>Каталог (8 категорий, 24 подкатегории, 200 товаров)</h2>
+      <p style="color:var(--muted);font-size:13px;">Сортировка: По персональному рейтингу (исключены товары с остатком 0: PRD-017, PRD-084, PRD-142)</p>
+      <div class="grid" id="catalogGrid"></div>
+    </div>
+  </div>
+
+  <!-- Экран 3: Поиск и фильтры -->
+  <div id="s3" class="screen">
+    <div class="panel">
+      <h2>Поиск и фасетная фильтрация</h2>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <input type="text" id="searchInput" placeholder="Введите запрос (например: умный, фильтр, несуществующий)..." onkeyup="runSearch()">
+        <button class="outline" onclick="document.getElementById('searchInput').value='';runSearch()">Сбросить</button>
+      </div>
+      <div id="searchResults" class="grid"></div>
+    </div>
+  </div>
+
+  <!-- Экран 4: Карточка товара -->
+  <div id="s4" class="screen">
+    <div class="panel">
+      <span class="badge">CAT-04 / SUB-04-1 • Умный дом</span>
+      <h2>PRD-085: LumenCraft Умные Mod-185 (Умный хаб)</h2>
+      <p>Мощность: 3623.5 Вт • Вес: 4585.6 г • Остаток: 23 шт. • Группа вариантов: VAR-SUB-04-1-01</p>
+      <div class="price">32 200 ₸ <span class="badge promo">Скидка 10%</span></div>
+      <button class="primary" onclick="addToCart('PRD-085', 'LumenCraft Умные Mod-185', 32200)">Добавить в корзину (EVT_CART_ADD +0.10)</button>
+      <button class="outline" onclick="alert('Состояние товара PRD-017: Остаток 0 шт. Кнопка покупки заблокирована, товар исключён из рекомендаций.')">Показать состояние «Нет в наличии» (PRD-017)</button>
+      <hr style="margin:18px 0;border:none;border-top:1px solid var(--border);">
+      <h3>Совместимые товары (матрица товар × товар, LNK-COMP = 0.85)</h3>
+      <div class="card" style="max-width:300px;">
+        <span class="badge">LNK-COMP: 0.85</span>
+        <strong>PRD-086: BreezeLine Датчики Mod-186</strong>
+        <div class="price">19 100 ₸</div>
+        <button class="primary" onclick="addToCart('PRD-086', 'BreezeLine Датчики Mod-186', 19100)">Добавить совместимый</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Экран 5: Корзина -->
+  <div id="s5" class="screen">
+    <div class="panel">
+      <h2>Корзина покупателя</h2>
+      <div id="cartList"></div>
+      <div style="margin-top:14px;display:flex;gap:8px;">
+        <button class="primary" onclick="showScreen('s6', document.querySelectorAll('.nav-tabs button')[5])">Перейти к оформлению</button>
+        <button class="outline" onclick="cart=[];renderCart()">Очистить (показать пустую корзину)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Экран 6: Оформление заказа -->
+  <div id="s6" class="screen">
+    <div class="panel">
+      <h2>Оформление заказа и оплата</h2>
+      <p>Доставка: Курьером по г. Рудный (бесплатно от 25 000 ₸) • Оплата: Картой онлайн</p>
+      <button class="primary" onclick="completeOrder()">Подтвердить и оплатить заказ (EVT_PURCHASE +0.15)</button>
+    </div>
+  </div>
+
+  <!-- Экран 7: Вход / Регистрация -->
+  <div id="s7" class="screen">
+    <div class="panel">
+      <h2>Вход, регистрация и восстановление доступа</h2>
+      <p style="font-size:13px;color:var(--muted);">Пароли хранятся в виде хэша Argon2id. При входе гостевой session_id связывается с user_id.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;max-width:320px;">
+        <input type="text" value="alisa.morozova@example.kz">
+        <input type="password" value="••••••••••••">
+        <button class="primary" onclick="document.getElementById('userSelect').value='USR-01';switchUser();showScreen('s1', document.querySelectorAll('.nav-tabs button')[0])">Войти как USR-01 (Алиса)</button>
+        <button class="outline" onclick="alert('Одноразовый токен восстановления отправлен на email (TTL 15 мин).')">Восстановить пароль</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Экран 8: Личный кабинет -->
+  <div id="s8" class="screen">
+    <div class="panel">
+      <h2>Личный кабинет и история покупок</h2>
+      <p>Активная группа потребления: <strong id="profileGroup">Гость (нет группы)</strong></p>
+      <div class="row"><span>Заказ #ORD-101 • PRD-085 LumenCraft Умные Mod-185</span><span>32 200 ₸ • Доставлен</span></div>
+      <div class="row"><span>Заказ #ORD-103 • PRD-154 KlaraPro Сменные Mod-254</span><span>2 400 ₸ • Доставлен</span></div>
+    </div>
+  </div>
+
+  <!-- Экран 9: Предпочтения -->
+  <div id="s9" class="screen">
+    <div class="panel">
+      <h2>Управление предпочтениями и приватностью</h2>
+      <div class="row">
+        <span>Персональные рекомендации (personalization_enabled)</span>
+        <input type="checkbox" id="persToggle" checked onchange="togglePers()">
+      </div>
+      <div class="row"><span>PRF-04 Умный дом</span><span>+1.00</span></div>
+      <div class="row"><span>PRF-02 Премиальность</span><span>+0.85</span></div>
+      <div class="row"><span>PRF-08 Повторный расходник</span><span>-0.40</span></div>
+      <button class="outline" style="margin-top:12px;" onclick="alert('История событий очищена, веса сброшены в 0.00.')">Сбросить историю предпочтений</button>
+    </div>
+  </div>
+
+  <!-- Экран 10: Админ-панель -->
+  <div id="s10" class="screen">
+    <div class="panel">
+      <h2>Административная панель и управление остатками</h2>
+      <div class="row"><span>PRD-017 KlaraPro Смарт-часы Mod-117 (исключён из выдачи)</span><span>Остаток: <strong>0 шт.</strong></span></div>
+      <div class="row"><span>PRD-085 LumenCraft Умные Mod-185</span><span>Остаток: <strong>23 шт.</strong></span></div>
+      <div class="row"><span>PRD-154 KlaraPro Сменные Mod-254</span><span>Остаток: <strong>22 шт.</strong></span></div>
+      <button class="primary" style="margin-top:12px;" onclick="alert('Пакетный пересчёт матриц G×C и LNK-COBUY выполнен!')">Запустить пересчёт матриц</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const dataByRole = {
+  GUEST: {
+    banner: "Режим: Новый гость. Показаны популярные и акционные товары (Alg_Cold).",
+    group: "Нет группы (Гость)",
+    items: [
+      {id:"PRD-004", name:"BreezeLine Смартфоны Mod-104", price:97500, reason:"Хит продаж • Скидка 20%", promo:true},
+      {id:"PRD-029", name:"LumenCraft Ноутбуки Mod-129", price:64500, reason:"Популярное • Скидка 20%", promo:true},
+      {id:"PRD-001", name:"NordHome Смартфоны Mod-101", price:48000, reason:"Высокий рейтинг • В наличии 109 шт.", promo:false},
+      {id:"PRD-085", name:"LumenCraft Умные Mod-185", price:32200, reason:"Топ категории Умный дом", promo:false},
+      {id:"PRD-055", name:"DeskForm Кофемашины Mod-155", price:12500, reason:"Акция недели • Скидка 20%", promo:true}
+    ]
+  },
+  "USR-01": {
+    banner: "USR-01 Алиса Морозова (GRP-2: Технологические энтузиасты). Персонализация активна.",
+    group: "GRP-2: Технологические энтузиасты",
+    items: [
+      {id:"PRD-086", name:"BreezeLine Датчики Mod-186", price:19100, reason:"Совместимо с хабом PRD-085 (0.85)", promo:false},
+      {id:"PRD-004", name:"BreezeLine Смартфоны Mod-104", price:97500, reason:"Совпадение PRF-02 & PRF-04 (0.68)", promo:true},
+      {id:"PRD-001", name:"NordHome Смартфоны Mod-101", price:48000, reason:"Интерес группы GRP-2 (0.88)", promo:false},
+      {id:"PRD-085", name:"LumenCraft Умные Mod-185", price:32200, reason:"Умный дом PRF-04 = +1.00", promo:false},
+      {id:"PRD-101", name:"DeskForm Камеры Mod-201", price:36600, reason:"Категория CAT-04 (0.97)", promo:false}
+    ]
+  },
+  "USR-03": {
+    banner: "USR-03 Елена Волкова (GRP-3: Семейные покупатели с ротацией). Персонализация активна.",
+    group: "GRP-3: Семейные покупатели с ротацией",
+    items: [
+      {id:"PRD-154", name:"KlaraPro Сменные Mod-254 (Фильтр)", price:2400, reason:"Регулярный расходник PRF-08 (+0.95)", promo:true},
+      {id:"PRD-155", name:"NordHome Фильтры Mod-255", price:2800, reason:"Совместная покупка LNK-COBUY (0.88)", promo:false},
+      {id:"PRD-118", name:"DeskForm Очистители Mod-218", price:42700, reason:"Семейный формат PRF-09 (+0.98)", promo:true},
+      {id:"PRD-072", name:"NordHome Блендеры Mod-172", price:45100, reason:"Категория Кухня CAT-03 (0.89)", promo:false},
+      {id:"PRD-165", name:"EcoPulse Кабели и адаптеры Mod-265", price:4800, reason:"Высокая доступность (103 шт.)", promo:false}
+    ]
+  }
+};
+
+let cart = [{id:"PRD-085", name:"LumenCraft Умные Mod-185", price:32200}];
+
+function renderCards(targetId, list) {
+  const el = document.getElementById(targetId);
+  if (!list.length) {
+    el.innerHTML = "<p style='color:var(--muted)'>Ничего не найдено (Empty State). Попробуйте изменить запрос.</p>";
+    return;
+  }
+  el.innerHTML = list.map(it => `
+    <div class="card">
+      <div>
+        <span class="badge ${it.promo ? 'promo' : ''}">${it.reason}</span>
+        <div><strong>${it.id}</strong>: ${it.name}</div>
+      </div>
+      <div>
+        <div class="price">${it.price.toLocaleString('ru-RU')} ₸</div>
+        <button class="primary" style="width:100%" onclick="addToCart('${it.id}','${it.name}',${it.price})">В корзину</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function switchUser() {
+  const persOn = document.getElementById("persToggle").checked;
+  const role = persOn ? document.getElementById("userSelect").value : "GUEST";
+  const cfg = dataByRole[role];
+  document.getElementById("bannerText").textContent = persOn ? cfg.banner : "Персонализация отключена пользователем (opt-out). Показан базовый список Alg_Cold.";
+  document.getElementById("profileGroup").textContent = cfg.group;
+  renderCards("homeRecs", cfg.items);
+  renderCards("catalogGrid", [...dataByRole["USR-01"].items, ...dataByRole["USR-03"].items]);
+  renderCards("searchResults", [...dataByRole["USR-01"].items, ...dataByRole["USR-03"].items]);
+}
+
+function togglePers() { switchUser(); }
+function toggleMobile() { document.getElementById("viewport").classList.toggle("mobile"); }
+
+function showScreen(id, btn) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelectorAll(".nav-tabs button").forEach(b => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  if (id === "s5") renderCart();
+}
+
+function addToCart(id, name, price) {
+  cart.push({id, name, price});
+  alert(`Товар ${id} добавлен в корзину! Зарегистрировано событие EVT_CART_ADD (+0.10).`);
+}
+
+function renderCart() {
+  const el = document.getElementById("cartList");
+  if (!cart.length) {
+    el.innerHTML = "<p style='color:var(--muted)'>Корзина пуста. Перейдите в каталог или рекомендации для выбора товаров.</p>";
+    return;
+  }
+  const sum = cart.reduce((a, b) => a + b.price, 0);
+  el.innerHTML = cart.map(c => `<div class="row"><span>${c.id} — ${c.name}</span><strong>${c.price.toLocaleString('ru-RU')} ₸</strong></div>`).join("") +
+    `<div class="row"><strong>Итого к оплате:</strong><strong>${sum.toLocaleString('ru-RU')} ₸</strong></div>`;
+}
+
+function completeOrder() {
+  alert("Заказ оплачен! Зарегистрировано событие EVT_PURCHASE (+0.15), матрицы U×P и G×C обновлены.");
+  cart = [];
+  showScreen("s1", document.querySelectorAll(".nav-tabs button")[0]);
+}
+
+function runSearch() {
+  const q = document.getElementById("searchInput").value.toLowerCase().trim();
+  const all = [...dataByRole["USR-01"].items, ...dataByRole["USR-03"].items];
+  renderCards("searchResults", all.filter(x => x.name.toLowerCase().includes(q) || x.id.toLowerCase().includes(q)));
+}
+
+switchUser();
+</script>
+</body>
+</html>
